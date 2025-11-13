@@ -16,28 +16,13 @@ pr:
       - main
       - develop
 
-schedules:
-  # Run smoke tests every 4 hours
-  - cron: "0 */4 * * *"
-    displayName: Smoke tests (every 4 hours)
-    branches:
-      include:
-        - main
-    always: true
-  
-  # Run full regression tests daily at 2 AM UTC
-  - cron: "0 2 * * *"
-    displayName: Full regression tests (daily)
-    branches:
-      include:
-        - main
-    always: true
+# schedules removed - pipeline runs only on-demand or when code changes are pushed
 
 pool:
   vmImage: 'ubuntu-latest'
 
 parameters:
-  # Allow manual selection of test suite
+  # Allow manual selection of test suite - limited to smoke and regression only
   - name: testSuite
     displayName: 'Select Test Suite'
     type: string
@@ -45,43 +30,14 @@ parameters:
     values:
       - smoke
       - regression
-      - account-management
-      - transaction-management
-      - customer-management
-      - loan-management
-      - payment-management
-      - security-and-auth
-      - all-modules
-      - custom
-
-  - name: customTestPath
-    displayName: 'Custom Test Path (if custom selected)'
-    type: string
-    default: 'tests/account-management'
 
 variables:
   NODE_VERSION: '20.x'
-  # Define test commands for different suites
+  # Define test commands for smoke and regression
   ${{ if eq(parameters.testSuite, 'smoke') }}:
     TEST_COMMAND: 'npm run test:account-management:ci'
   ${{ if eq(parameters.testSuite, 'regression') }}:
     TEST_COMMAND: 'npm run test:all-modules:ci'
-  ${{ if eq(parameters.testSuite, 'account-management') }}:
-    TEST_COMMAND: 'npm run test:account-management:ci'
-  ${{ if eq(parameters.testSuite, 'transaction-management') }}:
-    TEST_COMMAND: 'npm run test:transaction-management:ci'
-  ${{ if eq(parameters.testSuite, 'customer-management') }}:
-    TEST_COMMAND: 'npm run test:customer-management:ci'
-  ${{ if eq(parameters.testSuite, 'loan-management') }}:
-    TEST_COMMAND: 'npm run test:loan-management:ci'
-  ${{ if eq(parameters.testSuite, 'payment-management') }}:
-    TEST_COMMAND: 'npm run test:payment-management:ci'
-  ${{ if eq(parameters.testSuite, 'security-and-auth') }}:
-    TEST_COMMAND: 'npm run test:security-and-auth:ci'
-  ${{ if eq(parameters.testSuite, 'all-modules') }}:
-    TEST_COMMAND: 'npm run test:all-modules:ci'
-  ${{ if eq(parameters.testSuite, 'custom') }}:
-    TEST_COMMAND: 'node node_modules/@playwright/test/cli.js test ${{ parameters.customTestPath }}'
 
 stages:
   - stage: Test

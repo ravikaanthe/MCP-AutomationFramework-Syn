@@ -53,12 +53,11 @@ export default defineConfig({
 
     projects: [
   {
-    name: 'chromium-headless',
-    use: { ...devices['Desktop Chrome'], headless: true },
-  },
-  {
-    name: 'chromium-headed',
-    use: { ...devices['Desktop Chrome'], headless: false },
+    name: 'chromium',
+    use: { 
+      ...devices['Desktop Chrome'], 
+      headless: process.env.CI ? true : false  // headless in CI, headed locally
+    },
   },
   // {
   //   name: 'firefox-headless',
