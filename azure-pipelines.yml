@@ -33,6 +33,7 @@ parameters:
 
 variables:
   NODE_VERSION: '20.x'
+  CI: 'true'
   # Define test commands for smoke and regression
   ${{ if eq(parameters.testSuite, 'smoke') }}:
     TEST_COMMAND: 'npm run test:account-management:ci'
@@ -58,7 +59,9 @@ stages:
           - script: npx playwright install --with-deps chromium
             displayName: 'Install Playwright browsers'
           
-          - script: $(TEST_COMMAND)
+          - script: |
+              export CI=true
+              $(TEST_COMMAND)
             displayName: 'Run ${{ parameters.testSuite }} Tests'
             continueOnError: false
           
