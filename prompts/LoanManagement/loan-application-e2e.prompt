@@ -1,0 +1,73 @@
+# Title: Loan Application E2E
+# Module: LoanManagement
+# Description: Apply for loan via API and verify application status in UI
+# Priority: High
+# Test ID: TC-LOAN-001
+
+---
+
+## GOAL
+Apply for a personal loan through API and validate that:
+1. Loan application is submitted successfully
+2. Loan application ID is generated
+3. Application appears in UI with correct status
+4. Loan details match the application
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/FicusRoot/katalon
+- Store `customerId` from response → **customerId**
+
+### Step 2: Get Customer Account for Down Payment
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}/accounts
+- Store first account `id` → **fromAccountId**
+
+### Step 3: Apply for Loan
+- HTTP Method: POST
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/requestLoan?customerId={{customerId}}&amount=5000&downPayment=500&fromAccountId={{fromAccountId}}
+- Verify response status is 200
+- Store loan `id` → **loanAccountId**
+- Store `responseDate` → **loanDate**
+
+### Step 4: Verify Loan Account Created
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/accounts/{{loanAccountId}}
+- Verify account exists
+- Verify account `type` is "LOAN"
+
+### Step 5: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+### Step 6: Login to Web UI
+- Username: FicusRoot
+- Password: katalon
+
+### Step 7: Navigate to Accounts Overview
+- Click "Accounts Overview" link
+
+### Step 8: Verify Loan Account in UI
+- Check if **loanAccountId** is displayed in accounts table
+- Verify account type shows "LOAN"
+- Verify loan amount is $5000.00
+
+### Step 9: Check Loan Details
+- Click on the loan account ({{loanAccountId}})
+- Verify loan balance is displayed
+- Verify transaction history shows initial loan amount
+
+---
+
+## VALIDATION RULES
+- **PASS**: Loan account visible in UI with correct amount and type
+- **FAIL**: Loan account missing or details incorrect
+
+---
+
+## NOTES
+- Loan application may require approval in real systems
+- This test assumes auto-approval for testing purposes

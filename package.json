@@ -1,0 +1,37 @@
+{
+  "name": "playwright-mcp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node node_modules/@playwright/test/cli.js test",
+    "test:headed": "node node_modules/@playwright/test/cli.js test --headed",
+    "test:ui": "node node_modules/@playwright/test/cli.js test --ui",
+    "test:debug": "node node_modules/@playwright/test/cli.js test --debug",
+    "report": "node node_modules/@playwright/test/cli.js show-report",
+    "test:account-management": "node node_modules/@playwright/test/cli.js test tests/account-management --headed",
+    "test:transaction-management": "node node_modules/@playwright/test/cli.js test tests/transaction-management --headed",
+    "test:customer-management": "node node_modules/@playwright/test/cli.js test tests/customer-management --headed",
+    "test:loan-management": "node node_modules/@playwright/test/cli.js test tests/loan-management --headed",
+    "test:payment-management": "node node_modules/@playwright/test/cli.js test tests/payment-management --headed",
+    "test:security-and-auth": "node node_modules/@playwright/test/cli.js test tests/security-and-auth --headed",
+    "test:all-modules": "node node_modules/@playwright/test/cli.js test tests --headed",
+    "test:account-management:ci": "node node_modules/@playwright/test/cli.js test tests/account-management",
+    "test:transaction-management:ci": "node node_modules/@playwright/test/cli.js test tests/transaction-management",
+    "test:customer-management:ci": "node node_modules/@playwright/test/cli.js test tests/customer-management",
+    "test:loan-management:ci": "node node_modules/@playwright/test/cli.js test tests/loan-management",
+    "test:payment-management:ci": "node node_modules/@playwright/test/cli.js test tests/payment-management",
+    "test:security-and-auth:ci": "node node_modules/@playwright/test/cli.js test tests/security-and-auth",
+    "test:all-modules:ci": "node node_modules/@playwright/test/cli.js test tests"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.1.0"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

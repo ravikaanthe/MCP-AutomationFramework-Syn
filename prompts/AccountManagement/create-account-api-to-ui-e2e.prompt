@@ -1,0 +1,68 @@
+# prompt.txt
+# Title: Parabank End-to-End API to UI Account Creation Validation
+# Framework: Playwright MCP + GitHub Copilot
+# Description: Validate that a new account created through API is displayed in the Parabank web UI.
+
+---
+
+## GOAL
+Perform an end-to-end validation for Parabank application where:
+- The test logs in through API,
+- Creates a new account via API,
+- Then verifies in the web UI that the new account appears under “Account Overview”.
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API
+- HTTP Method: GET  
+- Endpoint:  
+  https://parabank.parasoft.com/parabank/services/bank/login/ficusroot/katalon  
+- Store `customerId` from the response into variable → **customerId**
+
+---
+
+### Step 2: Retrieve Existing Accounts via API
+- HTTP Method: GET  
+- Endpoint:  
+  https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}/accounts  
+- Use `customerId` from Step 1.  
+- Store the first account’s `id` into variable → **firstAccountId**
+
+---
+
+### Step 3: Create New Account via API
+- HTTP Method: POST  
+- Endpoint:  
+  https://parabank.parasoft.com/parabank/services/bank/createAccount?customerId={{customerId}}&newAccountType=1&fromAccountId={{firstAccountId}}  
+- Use variables `customerId` and `firstAccountId` from previous steps.  
+- Store the newly created account id into variable → **newAccountId**
+
+---
+
+### Step 4: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+---
+
+### Step 5: Login to Web UI
+- Username: FicusRoot  
+- Password: katalon  
+
+---
+
+### Step 6: Verify Successful Login
+- Ensure the home page displays “Account Overview” link.
+
+---
+
+### Step 7: Validate New Account in UI
+- Click “Account Overview” link.  
+- Check if the **newAccountId** from Step 3 is displayed in the account list table.
+
+---
+
+## VALIDATION RULES
+- **PASS:** If `newAccountId` is found in the Account Overview page.
+- **FAIL:** If `newAccountId` is missing from the Account Overview page

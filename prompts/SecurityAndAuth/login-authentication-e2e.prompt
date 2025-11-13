@@ -1,0 +1,96 @@
+# Title: Login Authentication E2E
+# Module: SecurityAndAuth
+# Description: Validate login authentication flow via API and UI
+# Priority: Critical
+# Test ID: TC-AUTH-001
+
+---
+
+## GOAL
+Validate secure login authentication:
+1. Successful API authentication with valid credentials
+2. Failed API authentication with invalid credentials
+3. Successful UI login with valid credentials
+4. Session persistence across pages
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API with Valid Credentials
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/FicusRoot/katalon
+- Verify response status is 200
+- Store `customerId` → **customerId**
+- Store `firstName` → **firstName**
+
+### Step 2: Verify Customer Details Retrieved
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}
+- Verify response contains customer data
+- Verify `firstName` matches **firstName**
+
+### Step 3: Test API Login with Invalid Credentials
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/InvalidUser/WrongPassword
+- Verify response status is 400 or 401
+- Verify error message indicates authentication failure
+
+### Step 4: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+### Step 5: Verify Login Page Displayed
+- Check if username input field is visible
+- Check if password input field is visible
+- Check if login button is visible
+
+### Step 6: Attempt Login with Invalid Credentials
+- Username: InvalidUser
+- Password: WrongPassword
+- Click Submit button
+- Verify error message is displayed
+- Verify user is not logged in
+
+### Step 7: Login with Valid Credentials
+- Clear username and password fields
+- Username: FicusRoot
+- Password: katalon
+- Click Submit button
+
+### Step 8: Verify Successful Login
+- Check if "Accounts Overview" link is visible
+- Check if welcome message displays user name
+- Verify URL changed to account overview page
+
+### Step 9: Verify Session Persistence
+- Click "Accounts Overview" link
+- Verify user remains logged in
+- Verify account data is displayed
+- Check if logout link is visible
+
+### Step 10: Test Logout Functionality
+- Click "Log Out" link
+- Verify user is redirected to login page
+- Verify session is cleared
+- Attempt to navigate to protected page (should redirect to login)
+
+---
+
+## VALIDATION RULES
+- **PASS**: 
+  - Valid credentials allow login (API and UI)
+  - Invalid credentials are rejected
+  - Session persists across navigation
+  - Logout clears session
+- **FAIL**: 
+  - Invalid credentials allow access
+  - Session does not persist
+  - Logout does not clear session
+
+---
+
+## SECURITY CHECKS
+- ✓ Invalid credentials rejected
+- ✓ Session timeout (if applicable)
+- ✓ Secure password handling
+- ✓ Proper session management

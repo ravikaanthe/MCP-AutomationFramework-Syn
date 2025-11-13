@@ -1,0 +1,67 @@
+# Title: Fund Transfer Between Accounts E2E
+# Module: TransactionManagement
+# Description: Transfer funds between two accounts via API and verify transaction in UI
+# Priority: High
+# Test ID: TC-TXN-001
+
+---
+
+## GOAL
+Transfer $100 from one account to another and validate that:
+1. Transaction is completed successfully
+2. Transaction ID is generated
+3. Transaction appears in account history in UI
+4. Account balances are updated correctly
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/FicusRoot/katalon
+- Store `customerId` from response → **customerId**
+
+### Step 2: Get Customer Accounts
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}/accounts
+- Store first account `id` → **fromAccountId**
+- Store second account `id` → **toAccountId**
+
+### Step 3: Get Initial Balance of Source Account
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/accounts/{{fromAccountId}}
+- Store `balance` → **initialBalance**
+
+### Step 4: Transfer Funds
+- HTTP Method: POST
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/transfer?fromAccountId={{fromAccountId}}&toAccountId={{toAccountId}}&amount=100
+- Verify response status is 200
+- Store transaction ID → **transactionId**
+
+### Step 5: Verify Transaction via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/accounts/{{fromAccountId}}/transactions
+- Verify transaction list contains **transactionId**
+
+### Step 6: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+### Step 7: Login to Web UI
+- Username: FicusRoot
+- Password: katalon
+
+### Step 8: Navigate to Account Activity
+- Click "Accounts Overview"
+- Click on the source account ({{fromAccountId}})
+
+### Step 9: Verify Transaction in UI
+- Check if transaction history table contains the transfer
+- Verify amount is $100.00
+- Verify transaction type is "Debit"
+
+---
+
+## VALIDATION RULES
+- **PASS**: Transaction appears in UI with correct amount and type
+- **FAIL**: Transaction missing from UI or amount/type incorrect

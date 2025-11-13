@@ -1,0 +1,84 @@
+# Title: Bill Payment E2E
+# Module: PaymentManagement
+# Description: Set up and execute bill payment via API and verify in UI
+# Priority: High
+# Test ID: TC-PAY-001
+
+---
+
+## GOAL
+Pay a utility bill through API and validate that:
+1. Payment is processed successfully
+2. Payment confirmation is generated
+3. Payment appears in transaction history in UI
+4. Account balance is reduced by payment amount
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/FicusRoot/katalon
+- Store `customerId` from response → **customerId**
+
+### Step 2: Get Payment Account
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}/accounts
+- Store first account `id` → **accountId**
+
+### Step 3: Get Initial Account Balance
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/accounts/{{accountId}}
+- Store `balance` → **initialBalance**
+
+### Step 4: Process Bill Payment
+- HTTP Method: POST
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/billpay?accountId={{accountId}}
+- Request Body:
+  ```xml
+  <billPaymentRequest>
+    <accountId>{{accountId}}</accountId>
+    <amount>75.00</amount>
+    <payee>
+      <name>Electric Company</name>
+      <street>456 Energy St</street>
+      <city>Springfield</city>
+      <state>IL</state>
+      <zipCode>62701</zipCode>
+      <phoneNumber>555-1234</phoneNumber>
+      <accountNumber>98765</accountNumber>
+    </payee>
+  </billPaymentRequest>
+  ```
+- Verify response status is 200
+- Store payment ID → **paymentId**
+
+### Step 5: Verify Updated Balance
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/accounts/{{accountId}}
+- Store `balance` → **newBalance**
+- Verify newBalance = initialBalance - 75.00
+
+### Step 6: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+### Step 7: Login to Web UI
+- Username: FicusRoot
+- Password: katalon
+
+### Step 8: Navigate to Account Activity
+- Click "Accounts Overview"
+- Click on account ({{accountId}})
+
+### Step 9: Verify Bill Payment in Transaction History
+- Check if transaction history contains bill payment
+- Verify payee name is "Electric Company"
+- Verify amount is $75.00
+- Verify transaction type is "Debit"
+
+---
+
+## VALIDATION RULES
+- **PASS**: Bill payment appears in UI with correct payee and amount
+- **FAIL**: Payment missing from transaction history or details incorrect

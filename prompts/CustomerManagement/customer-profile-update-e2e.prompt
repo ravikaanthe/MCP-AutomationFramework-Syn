@@ -1,0 +1,67 @@
+# Title: Customer Profile Update E2E
+# Module: CustomerManagement
+# Description: Update customer profile via API and verify changes in UI
+# Priority: Medium
+# Test ID: TC-CUST-001
+
+---
+
+## GOAL
+Update customer contact information through API and validate that:
+1. Profile is updated successfully
+2. Updated information is visible in UI
+3. Changes are persisted in the system
+
+---
+
+## TEST STEPS
+
+### Step 1: Login via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/login/FicusRoot/katalon
+- Store `customerId` from response → **customerId**
+
+### Step 2: Get Current Customer Profile
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}
+- Store current `phoneNumber` → **oldPhoneNumber**
+- Store current `address.street` → **oldStreet**
+
+### Step 3: Update Customer Profile
+- HTTP Method: POST
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/update/{{customerId}}
+- Request Body:
+  ```xml
+  <customer>
+    <id>{{customerId}}</id>
+    <firstName>Ficus</firstName>
+    <lastName>Root</lastName>
+    <phoneNumber>555-1234-5678</phoneNumber>
+  </customer>
+  ```
+- Store new phone number → **newPhoneNumber**
+
+### Step 4: Verify Update via API
+- HTTP Method: GET
+- Endpoint: https://parabank.parasoft.com/parabank/services/bank/customers/{{customerId}}
+- Verify `phoneNumber` equals **newPhoneNumber**
+
+### Step 5: Launch Web Application
+- Open URL: https://parabank.parasoft.com/parabank/index.htm
+
+### Step 6: Login to Web UI
+- Username: FicusRoot
+- Password: katalon
+
+### Step 7: Navigate to Profile Page
+- Click "Update Contact Info" link
+
+### Step 8: Verify Updated Phone Number in UI
+- Check if phone number field displays **newPhoneNumber**
+- Verify other profile fields are intact
+
+---
+
+## VALIDATION RULES
+- **PASS**: Updated phone number is displayed in UI
+- **FAIL**: Old phone number still displayed or update failed

@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target": "ES2020", // Compile to ES2020 JavaScript
+        "module": "commonjs", // Use Node.js module system
+        "lib": [
+            "ES2020"
+        ], // Include ES2020 standard library
+        "strict": true, // Enable strict type checking
+        "esModuleInterop": true, // Better import compatibility
+        "skipLibCheck": true, // Skip type checking of .d.ts files
+        "forceConsistentCasingInFileNames": true, // Case-sensitive imports
+        "resolveJsonModule": true // Allow importing JSON files
+    },
+    "include": [
+        "tests/**/*", // Compile all files in tests folder
+        "playwright.config.ts" // Include the config file
+    ],
+    "exclude": [
+        "node_modules", // Don't compile dependencies
+        "test-results", // Skip test output folders
+        "playwright-report" // Skip report folders
+    ]
+}
