@@ -17,9 +17,17 @@ pr:
       - develop
 
 schedules:
-  # Run tests daily at 2 AM UTC
+  # Run smoke tests every 4 hours
+  - cron: "0 */4 * * *"
+    displayName: Smoke tests (every 4 hours)
+    branches:
+      include:
+        - main
+    always: true
+  
+  # Run full regression tests daily at 2 AM UTC
   - cron: "0 2 * * *"
-    displayName: Daily test run
+    displayName: Full regression tests (daily)
     branches:
       include:
         - main
@@ -28,16 +36,60 @@ schedules:
 pool:
   vmImage: 'ubuntu-latest'
 
+parameters:
+  # Allow manual selection of test suite
+  - name: testSuite
+    displayName: 'Select Test Suite'
+    type: string
+    default: 'smoke'
+    values:
+      - smoke
+      - regression
+      - account-management
+      - transaction-management
+      - customer-management
+      - loan-management
+      - payment-management
+      - security-and-auth
+      - all-modules
+      - custom
+
+  - name: customTestPath
+    displayName: 'Custom Test Path (if custom selected)'
+    type: string
+    default: 'tests/account-management'
+
 variables:
   NODE_VERSION: '20.x'
+  # Define test commands for different suites
+  ${{ if eq(parameters.testSuite, 'smoke') }}:
+    TEST_COMMAND: 'npm run test:account-management:ci'
+  ${{ if eq(parameters.testSuite, 'regression') }}:
+    TEST_COMMAND: 'npm run test:all-modules:ci'
+  ${{ if eq(parameters.testSuite, 'account-management') }}:
+    TEST_COMMAND: 'npm run test:account-management:ci'
+  ${{ if eq(parameters.testSuite, 'transaction-management') }}:
+    TEST_COMMAND: 'npm run test:transaction-management:ci'
+  ${{ if eq(parameters.testSuite, 'customer-management') }}:
+    TEST_COMMAND: 'npm run test:customer-management:ci'
+  ${{ if eq(parameters.testSuite, 'loan-management') }}:
+    TEST_COMMAND: 'npm run test:loan-management:ci'
+  ${{ if eq(parameters.testSuite, 'payment-management') }}:
+    TEST_COMMAND: 'npm run test:payment-management:ci'
+  ${{ if eq(parameters.testSuite, 'security-and-auth') }}:
+    TEST_COMMAND: 'npm run test:security-and-auth:ci'
+  ${{ if eq(parameters.testSuite, 'all-modules') }}:
+    TEST_COMMAND: 'npm run test:all-modules:ci'
+  ${{ if eq(parameters.testSuite, 'custom') }}:
+    TEST_COMMAND: 'node node_modules/@playwright/test/cli.js test ${{ parameters.customTestPath }}'
 
 stages:
   - stage: Test
-    displayName: 'Run Playwright Tests'
+    displayName: 'Run Playwright Tests - ${{ parameters.testSuite }}'
     jobs:
-      - job: AccountManagement
-        displayName: 'Account Management Tests'
-        timeoutInMinutes: 30
+      - job: PlaywrightTests
+        displayName: 'Execute ${{ parameters.testSuite }} Tests'
+        timeoutInMinutes: 60
         steps:
           - task: NodeTool@0
             displayName: 'Setup Node.js'
@@ -50,8 +102,8 @@ stages:
           - script: npx playwright install --with-deps chromium
             displayName: 'Install Playwright browsers'
           
-          - script: npm run test:account-management:ci
-            displayName: 'Run Account Management Tests'
+          - script: $(TEST_COMMAND)
+            displayName: 'Run ${{ parameters.testSuite }} Tests'
             continueOnError: false
           
           - task: PublishTestResults@2
@@ -67,42 +119,5 @@ stages:
             condition: always()
             inputs:
               targetPath: 'playwright-report'
-              artifact: 'playwright-report-account-management'
-              publishLocation: 'pipeline'
-      
-      - job: AllModules
-        displayName: 'All Module Tests'
-        timeoutInMinutes: 60
-        dependsOn: AccountManagement
-        condition: succeededOrFailed()
-        steps:
-          - task: NodeTool@0
-            displayName: 'Setup Node.js'
-            inputs:
-              versionSpec: $(NODE_VERSION)
-          
-          - script: npm ci
-            displayName: 'Install dependencies'
-          
-          - script: npx playwright install --with-deps chromium
-            displayName: 'Install Playwright browsers'
-          
-          - script: npm run test:all-modules:ci
-            displayName: 'Run All Module Tests'
-            continueOnError: true
-          
-          - task: PublishTestResults@2
-            displayName: 'Publish Test Results'
-            condition: always()
-            inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/test-results/*.xml'
-              failTaskOnFailedTests: false
-          
-          - task: PublishPipelineArtifact@1
-            displayName: 'Publish Playwright Report'
-            condition: always()
-            inputs:
-              targetPath: 'playwright-report'
-              artifact: 'playwright-report-all-modules'
+              artifact: 'playwright-report-${{ parameters.testSuite }}'
               publishLocation: 'pipeline'
