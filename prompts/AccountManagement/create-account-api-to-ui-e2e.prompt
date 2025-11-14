@@ -2,6 +2,7 @@
 # Title: Parabank End-to-End API to UI Account Creation Validation
 # Framework: Playwright MCP + GitHub Copilot
 # Description: Validate that a new account created through API is displayed in the Parabank web UI.
+# Framework Guidelines: See prompts/FRAMEWORK-GUIDELINES.md for code generation patterns
 
 ---
 

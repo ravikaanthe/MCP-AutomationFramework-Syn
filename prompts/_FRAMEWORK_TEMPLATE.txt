@@ -1,0 +1,50 @@
+# PROMPT TEMPLATE
+# Copy this template to create new test prompts
+
+---
+
+# prompt.txt
+# Title: [Your Test Title]
+# Framework: Playwright MCP + GitHub Copilot
+# Description: [Brief description of what this test validates]
+# Framework Guidelines: See prompts/FRAMEWORK-GUIDELINES.md for code generation patterns
+
+---
+
+## GOAL
+[Describe what this test validates - be specific about the end-to-end flow]
+
+Example:
+- Login via API
+- Perform action via API/UI
+- Validate result in UI/API
+
+---
+
+## TEST STEPS
+
+### Step 1: [Step Name]
+- HTTP Method: [GET/POST/PUT/DELETE]
+- Endpoint: [Full URL or relative path]
+- Action: [What to do]
+- Store: [Variable name] → **variableName**
+
+---
+
+### Step 2: [Step Name]
+- [Continue with clear, numbered steps]
+- Use {{variableName}} to reference stored variables
+
+---
+
+## VALIDATION RULES
+- **PASS:** [Condition for test to pass]
+- **FAIL:** [Condition for test to fail]
+
+---
+
+## NOTES (Optional)
+- Any special considerations
+- Known issues or dependencies
+- Test data requirements
+

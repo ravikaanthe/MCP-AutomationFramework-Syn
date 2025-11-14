@@ -206,6 +206,142 @@ export class UiHelper {
   }
 
   /**
+   * Get HTML attribute value
+   * @param locator - Element locator
+   * @param attributeName - Attribute name (e.g., 'id', 'class', 'href', 'data-test')
+   */
+  async getAttribute(locator: string, attributeName: string): Promise<string | null> {
+    console.log(`[UI] Getting attribute '${attributeName}' from: ${locator}`);
+    const element = await this.getElement(locator);
+    const value = await element.getAttribute(attributeName);
+    console.log(`[UI] Attribute '${attributeName}' value: ${value}`);
+    return value;
+  }
+
+  /**
+   * Get CSS property value
+   * @param locator - Element locator
+   * @param propertyName - CSS property name (e.g., 'color', 'font-size', 'display')
+   */
+  async getCssProperty(locator: string, propertyName: string): Promise<string> {
+    console.log(`[UI] Getting CSS property '${propertyName}' from: ${locator}`);
+    const element = await this.getElement(locator);
+    const value = await element.evaluate((el: any, prop: string) => {
+      const win = globalThis as any;
+      return win.getComputedStyle(el).getPropertyValue(prop);
+    }, propertyName);
+    console.log(`[UI] CSS property '${propertyName}' value: ${value}`);
+    return value;
+  }
+
+  /**
+   * Get input field value
+   * @param locator - Input field locator
+   */
+  async getInputValue(locator: string): Promise<string> {
+    console.log(`[UI] Getting input value from: ${locator}`);
+    const element = await this.getElement(locator);
+    const value = await element.inputValue();
+    console.log(`[UI] Input value: ${value}`);
+    return value;
+  }
+
+  /**
+   * Check if element is enabled
+   * @param locator - Element locator
+   */
+  async isEnabled(locator: string): Promise<boolean> {
+    console.log(`[UI] Checking if ${locator} is enabled`);
+    const element = await this.getElement(locator);
+    const enabled = await element.isEnabled();
+    console.log(`[UI] ${locator} is enabled: ${enabled}`);
+    return enabled;
+  }
+
+  /**
+   * Check if checkbox/radio is checked
+   * @param locator - Checkbox/radio locator
+   */
+  async isChecked(locator: string): Promise<boolean> {
+    console.log(`[UI] Checking if ${locator} is checked`);
+    const element = await this.getElement(locator);
+    const checked = await element.isChecked();
+    console.log(`[UI] ${locator} is checked: ${checked}`);
+    return checked;
+  }
+
+  /**
+   * Get element bounding box (position and size)
+   * @param locator - Element locator
+   */
+  async getElementBoundingBox(locator: string): Promise<{ x: number; y: number; width: number; height: number } | null> {
+    console.log(`[UI] Getting bounding box for: ${locator}`);
+    const element = await this.getElement(locator);
+    const box = await element.boundingBox();
+    console.log(`[UI] Bounding box:`, box);
+    return box;
+  }
+
+  /**
+   * Get all properties of an element (comprehensive extraction)
+   * @param locator - Element locator
+   */
+  async getAllProperties(locator: string): Promise<any> {
+    console.log(`[UI] Getting all properties from: ${locator}`);
+    const element = await this.getElement(locator);
+    
+    const properties = await element.evaluate((el: any) => {
+      const win = globalThis as any;
+      const computedStyle = win.getComputedStyle(el);
+      
+      return {
+        // Basic properties
+        tagName: el.tagName,
+        id: el.id,
+        className: el.className,
+        textContent: el.textContent?.trim(),
+        innerText: el.innerText?.trim(),
+        innerHTML: el.innerHTML,
+        
+        // Attributes
+        attributes: Array.from(el.attributes).reduce((acc: any, attr: any) => {
+          acc[attr.name] = attr.value;
+          return acc;
+        }, {} as Record<string, string>),
+        
+        // Form-specific
+        value: el.value || null,
+        checked: el.checked || null,
+        disabled: el.disabled || null,
+        readonly: el.readOnly || null,
+        selected: el.selected || null,
+        
+        // Visibility & State
+        isVisible: el.offsetParent !== null,
+        offsetWidth: el.offsetWidth,
+        offsetHeight: el.offsetHeight,
+        
+        // Computed styles (key properties)
+        styles: {
+          display: computedStyle.display,
+          visibility: computedStyle.visibility,
+          opacity: computedStyle.opacity,
+          color: computedStyle.color,
+          backgroundColor: computedStyle.backgroundColor,
+          fontSize: computedStyle.fontSize,
+          fontWeight: computedStyle.fontWeight,
+          border: computedStyle.border,
+          padding: computedStyle.padding,
+          margin: computedStyle.margin
+        }
+      };
+    });
+    
+    console.log(`[UI] All properties:`, JSON.stringify(properties, null, 2));
+    return properties;
+  }
+
+  /**
    * Get element using multiple strategies
    * @param locator - Element locator (CSS, XPath, text, role)
    */
