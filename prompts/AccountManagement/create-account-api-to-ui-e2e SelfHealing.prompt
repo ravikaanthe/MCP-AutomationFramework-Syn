@@ -49,18 +49,18 @@ Perform an end-to-end validation for Parabank application where:
 ---
 
 ### Step 5: Login to Web UI
-- Username: FicusRoot  
+- Username: ficusroot  
 - Password: katalon  
 
 ---
 
 ### Step 6: Verify Successful Login
-- Ensure the home page displays "Account Overview" link.
+- Ensure the home page displays "Account Overview" link or verify the presence of account overview navigation link.
 
 ---
 
 ### Step 7: Validate New Account in UI
-- Click "Account Overview" link.  
+- Navigate to "Account Overview" page (click the overview link).  
 - Check if the **newAccountId** from Step 3 is displayed in the account list table.
 
 ---

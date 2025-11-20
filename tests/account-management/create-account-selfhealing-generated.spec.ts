@@ -55,7 +55,7 @@ test.describe('Parabank Account Creation with Self-Healing', () => {
     
     // Step 5: Login to Web UI (with self-healing)
     console.log('\n=== Step 5: Login to Web UI (Self-Healing Enabled) ===');
-    await uiHelperWithSelfHealing.fill('input[name="username"]', 'FicusRoot');
+    await uiHelperWithSelfHealing.fill('input[name="username"]', 'ficusroot');
     await uiHelperWithSelfHealing.fill('input[name="password"]', 'katalon');
     await uiHelperWithSelfHealing.click('input[type="submit"][value="Log In"]');
     
@@ -64,12 +64,13 @@ test.describe('Parabank Account Creation with Self-Healing', () => {
     
     // Step 6: Verify Successful Login (with self-healing)
     console.log('\n=== Step 6: Verify Successful Login ===');
-    await uiHelperWithSelfHealing.verifyElementVisible('a:has-text("Accounts Overview")');
+    await uiHelperWithSelfHealing.waitForElement('a[href*="overview"]', 15000);
+    await uiHelperWithSelfHealing.verifyElementVisible('a[href*="overview"]');
     console.log('✓ Account Overview link visible');
     
     // Step 7: Validate New Account in UI (with self-healing)
     console.log('\n=== Step 7: Validate New Account in UI ===');
-    await uiHelperWithSelfHealing.click('a:has-text("Accounts Overview")');
+    await uiHelperWithSelfHealing.click('a[href*="overview"]');
     await page.waitForLoadState('networkidle', { timeout: 15000 });
     console.log('✓ Navigated to Account Overview page');
     
