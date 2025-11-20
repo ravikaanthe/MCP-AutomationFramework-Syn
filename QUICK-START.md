@@ -34,6 +34,85 @@ npm run report
 
 ---
 
+## 🎮 Running Tests - Complete Guide
+
+### Running All Tests in a Module
+Run all tests in a specific module folder:
+```bash
+npm run test:account-management      # All account tests (headed)
+npm run test:transaction-management  # All transaction tests (headed)
+npm run test:customer-management     # All customer tests (headed)
+```
+
+### Running Specific Test Patterns
+Use grep to run tests matching a pattern:
+```bash
+npm run test:selfhealing            # All self-healing tests (headed)
+npm test -- --headed --grep "login" # All tests with "login" in name
+```
+
+### Running Individual Tests
+**❌ DOES NOT WORK** (due to workspace folder name with special characters):
+```bash
+# These commands will fail with "No tests found":
+npm test tests/account-management/my-test.spec.ts
+npm test -- tests/account-management/my-test.spec.ts --headed
+```
+
+**✅ RECOMMENDED APPROACHES:**
+
+**Option 1:** Use VS Code Test Explorer
+- Open Testing panel (beaker icon)
+- Click the play button next to any test
+
+**Option 2:** Use `.only` modifier in the test file
+```typescript
+test.only('My specific test', async ({ ... }) => {
+  // This test will run exclusively
+});
+```
+Then run all tests in that module:
+```bash
+npm run test:account-management
+```
+
+**Option 3:** Use grep with unique test name
+```bash
+npm test -- --headed --grep "unique-test-name"
+```
+
+**Option 4:** Temporarily move other tests
+- Move other test files out of the folder
+- Run the module tests
+- Move files back
+
+### Running Tests with Options
+```bash
+# Headed mode (browser visible)
+npm run test:account-management
+
+# Headless mode (no browser UI)
+npm run test:account-management:ci
+
+# With 1 worker (no parallel execution)
+node node_modules/@playwright/test/cli.js test tests/account-management --headed --workers=1
+
+# Debug mode (step through)
+npm run test:debug
+
+# UI mode (interactive)
+npm run test:ui
+```
+
+### Self-Healing Tests
+Tests with `Self-Healing: YES` in the prompt file will automatically use self-healing:
+```bash
+npm run test:selfhealing           # Run all self-healing tests
+npm run test:selfhealing:ci        # Run in CI mode
+```
+
+---
+
 ## 📝 Create Your First Test
 
 ### 1. Write a Natural Language Prompt

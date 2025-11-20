@@ -6,6 +6,7 @@
 # prompt.txt
 # Title: [Your Test Title]
 # Framework: Playwright MCP + GitHub Copilot
+# Self-Healing: [YES/NO]  ← Only add if you want self-healing
 # Description: [Brief description of what this test validates]
 # Framework Guidelines: See prompts/FRAMEWORK-GUIDELINES.md for code generation patterns
 

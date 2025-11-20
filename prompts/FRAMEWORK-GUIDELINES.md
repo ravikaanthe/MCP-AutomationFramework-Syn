@@ -77,6 +77,46 @@ const value = testContext.get('variableName');
 
 ---
 
+### **5. Self-Healing (Optional)**
+
+**How to Enable:**
+Just add `# Self-Healing: YES` in the prompt file header. That's it!
+
+**In Prompt File:**
+```plaintext
+# Title: My Test
+# Self-Healing: YES  ← Add this line only
+# Description: Test with dynamic selectors
+```
+
+**Copilot will automatically:**
+- Use `uiHelperWithSelfHealing` instead of `uiHelper`
+- Add self-healing to all UI operations
+- No need to repeat it in every step!
+
+**When to Use Self-Healing:**
+- ✅ Dynamic/unstable selectors (auto-generated IDs)
+- ✅ Third-party applications with changing UI
+- ❌ Critical security tests
+- ❌ Stable applications
+
+**Standard UI Helper (Default):**
+```typescript
+test('Test', async ({ uiHelper }) => {
+  await uiHelper.click('button#submitBtn');
+});
+```
+
+**Self-Healing UI Helper (Auto-generated when prompt has Self-Healing: YES):**
+```typescript
+test('Test', async ({ uiHelperWithSelfHealing }) => {
+  await uiHelperWithSelfHealing.click('button#submitBtn');
+  // Automatically tries fallbacks if selector fails
+});
+```
+
+---
+
 ## 🏦 Parabank API Endpoints
 
 **Base URL:** `https://parabank.parasoft.com`  

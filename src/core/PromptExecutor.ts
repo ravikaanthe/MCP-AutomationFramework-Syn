@@ -6,6 +6,7 @@
 import { Page } from '@playwright/test';
 import { ApiHelper } from '../helpers/ApiHelper';
 import { UiHelper } from '../helpers/UiHelper';
+import { SelfHealingHelper } from '../helpers/SelfHealingHelper';
 import { testContext } from '../core/TestContext';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -21,11 +22,20 @@ export class PromptExecutor {
   private apiHelper: ApiHelper;
   private uiHelper: UiHelper | null = null;
   private steps: PromptStep[] = [];
+  private selfHealingEnabled: boolean = false;
 
-  constructor(apiHelper: ApiHelper, page?: Page) {
+  constructor(apiHelper: ApiHelper, page?: Page, enableSelfHealing: boolean = false) {
     this.apiHelper = apiHelper;
+    this.selfHealingEnabled = enableSelfHealing;
     if (page) {
-      this.uiHelper = new UiHelper(page);
+      if (enableSelfHealing) {
+        const selfHealingHelper = new SelfHealingHelper(page);
+        this.uiHelper = new UiHelper(page, selfHealingHelper);
+        console.log('[PromptExecutor] Self-healing ENABLED');
+      } else {
+        this.uiHelper = new UiHelper(page);
+        console.log('[PromptExecutor] Self-healing DISABLED');
+      }
     }
   }
 
@@ -37,6 +47,14 @@ export class PromptExecutor {
     console.log(`[PromptExecutor] Loading prompt: ${promptFilePath}`);
     
     const content = fs.readFileSync(promptFilePath, 'utf-8');
+    
+    // Check if self-healing is enabled in prompt
+    const selfHealingMatch = content.match(/^#?\s*Self-Healing:\s*(YES|NO)/im);
+    if (selfHealingMatch && selfHealingMatch[1].toUpperCase() === 'YES') {
+      this.selfHealingEnabled = true;
+      console.log('[PromptExecutor] Self-Healing detected in prompt: ENABLED');
+    }
+    
     this.steps = this.parsePrompt(content);
     
     console.log(`[PromptExecutor] Parsed ${this.steps.length} steps`);

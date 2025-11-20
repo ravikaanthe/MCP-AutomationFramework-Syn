@@ -129,27 +129,50 @@ const customerId = testContext.get('customerId');
 
 **What It Does:**
 - Extends Playwright's base test with custom fixtures
-- Automatically initializes ApiHelper, UiHelper, and TestContext
+- Automatically initializes ApiHelper, UiHelper, SelfHealingHelper, and TestContext
 - Provides clean instances for each test (prevents state pollution)
 - Handles cleanup after tests complete
+- Offers both standard and self-healing UI helpers
 
 **Architecture:**
 ```typescript
 type CustomFixtures = {
-  apiHelper: ApiHelper;      // For API testing
-  uiHelper: UiHelper;        // For UI automation
-  testContext: typeof testContext;  // For state management
+  apiHelper: ApiHelper;                   // For API testing
+  uiHelper: UiHelper;                     // Standard UI automation (no self-healing)
+  uiHelperWithSelfHealing: UiHelper;      // UI automation with self-healing enabled
+  selfHealingHelper: SelfHealingHelper;   // Self-healing logic helper
+  testContext: typeof testContext;        // For state management
 };
 
 export const test = base.extend<CustomFixtures>({ ... });
 ```
 
 **How Tests Use It:**
+
+**Option 1: Standard (No Self-Healing)**
 ```typescript
 import { test, expect } from '../../src/fixtures/test-fixtures';
 
-test('My test', async ({ apiHelper, uiHelper, testContext }) => {
-  // apiHelper, uiHelper, testContext are automatically available
+test('Standard test', async ({ apiHelper, uiHelper, testContext }) => {
+  // uiHelper - standard behavior, no self-healing
+  await uiHelper.click('button#submitBtn');
+});
+```
+
+**Option 2: With Self-Healing**
+```typescript
+test('Self-healing test', async ({ uiHelperWithSelfHealing, testContext }) => {
+  // uiHelperWithSelfHealing - tries fallback strategies if selector fails
+  await uiHelperWithSelfHealing.click('button#submitBtn');
+});
+```
+
+**Option 3: Access Self-Healing Helper Directly**
+```typescript
+test('Custom healing', async ({ selfHealingHelper }) => {
+  const element = await selfHealingHelper.findElementWithSelfHealing(
+    page, 'button#submitBtn', 'submit button'
+  );
 });
 ```
 
@@ -158,6 +181,7 @@ test('My test', async ({ apiHelper, uiHelper, testContext }) => {
 - Consistent setup across all tests
 - Automatic cleanup (dispose of resources)
 - Easy to add new fixtures without modifying tests
+- Optional self-healing - use only when needed
 
 ---
 
@@ -302,6 +326,114 @@ await uiHelper.screenshot('test-results/verification.png');
 - Built-in waits and error handling
 - Easy to extend with new methods
 - Provides both simple methods and access to full Playwright API
+
+---
+
+### **5. SelfHealingHelper.ts** (`src/helpers/SelfHealingHelper.ts`)
+
+**Purpose:** Automatic element locator healing with fallback strategies when primary selectors fail.
+
+**What It Does:**
+- Provides intelligent fallback strategies for broken selectors
+- Automatically tries multiple ways to locate elements
+- Logs healed selectors for debugging and maintenance
+- Reduces test maintenance when UI changes
+
+**Core Functionality:**
+
+#### **Automatic Element Location with Fallback:**
+```typescript
+// Automatically tries multiple strategies if primary selector fails
+const element = await selfHealingHelper.findElementWithSelfHealing(
+  page,
+  'button#submit-btn-12345',  // Primary selector
+  'submit button'              // Description for logging
+);
+```
+
+#### **Fallback Strategy Sequence:**
+
+**Strategy 1: CSS Variations**
+```typescript
+// Original: button#submit-btn
+// Tries: #submit-btn, [id="submit-btn"], [id*="submit-btn"]
+```
+
+**Strategy 2: Text-Based Selectors**
+```typescript
+// Tries: text="Submit", :has-text("Submit"), button:has-text("Submit")
+```
+
+**Strategy 3: Role-Based Selectors**
+```typescript
+// Tries: role=button, role=link, role=textbox
+```
+
+**Strategy 4: Partial Attribute Matching**
+```typescript
+// Tries: [name*="submit"], [type="submit"]
+```
+
+**Strategy 5: Parent-Child Relationships**
+```typescript
+// Tries: Simplified parent selectors
+```
+
+#### **Healing Logs:**
+```typescript
+// Get all healed selectors
+const healingLog = selfHealingHelper.getHealingLog();
+
+// Print summary
+selfHealingHelper.printHealingSummary();
+
+// Clear log
+selfHealingHelper.clearLog();
+```
+
+#### **Example Console Output:**
+```
+[Self-Healing] Attempting to locate: clickable element
+[Self-Healing] Primary selector: button#submit-btn-12345
+[Self-Healing] ✗ Primary selector failed
+[Self-Healing] Attempting fallback strategies...
+[Self-Healing] Trying strategy 2/5...
+[Self-Healing] ✓ Strategy 2 succeeded!
+[Self-Healing] ✓ HEALED SELECTOR:
+  Original: button#submit-btn-12345
+  Healed:   button:has-text("Submit")
+  Time:     2025-11-19T10:30:45.123Z
+```
+
+**When to Use:**
+- ✅ Dynamic IDs/classes (e.g., `user-123456`)
+- ✅ Third-party applications with changing UI
+- ✅ Development environments with UI churn
+- ❌ Critical security tests (use explicit selectors)
+- ❌ Performance-sensitive tests (adds overhead)
+
+**Integration with UiHelper:**
+
+Self-healing is **optional** and integrated via fixtures:
+
+```typescript
+// Standard UiHelper (no self-healing)
+test('Test', async ({ uiHelper }) => {
+  await uiHelper.click('button#submitBtn'); // Fails if selector changes
+});
+
+// UiHelper with self-healing enabled
+test('Test with healing', async ({ uiHelperWithSelfHealing }) => {
+  await uiHelperWithSelfHealing.click('button#submitBtn'); // Tries fallbacks
+});
+```
+
+**Why It's Important:**
+- Reduces test maintenance when UI changes
+- Increases test resilience in dynamic applications
+- Provides detailed logs for updating selectors
+- Optional feature - use only when needed
+- No impact on tests that don't use it
 
 ---
 
@@ -736,6 +868,7 @@ test.describe('Account Creation E2E', () => {
 - **README.md** - Project overview and setup
 - **QUICK-START.md** - 5-minute getting started guide
 - **ARCHITECTURE.md** - Deep dive into framework design
+- **SELF-HEALING-GUIDE.md** - Complete guide to self-healing capabilities
 - **LEADERSHIP-DEMO.md** - Complete demo presentation guide
 - **CI-CD-GUIDE.md** - Continuous integration setup
 - **prompts/FRAMEWORK-GUIDELINES.md** - Code generation patterns
@@ -745,5 +878,7 @@ test.describe('Account Creation E2E', () => {
 **Last Updated:** November 19, 2025
 
 **Framework Version:** 1.0.0
+
+**Self-Healing Version:** 1.0.0
 
 **Maintained By:** Automation Team

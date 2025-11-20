@@ -1,16 +1,26 @@
 /**
  * UiHelper - Utility class for UI operations
  * Handles web interactions with proper waits and error handling
+ * Supports optional self-healing capabilities
  */
 
 import { Page, Locator, expect } from '@playwright/test';
 import { testContext } from '../core/TestContext';
+import { SelfHealingHelper } from './SelfHealingHelper';
 
 export class UiHelper {
   private page: Page;
+  private selfHealingHelper?: SelfHealingHelper;
+  private enableSelfHealing: boolean;
 
-  constructor(page: Page) {
+  constructor(page: Page, selfHealingHelper?: SelfHealingHelper) {
     this.page = page;
+    this.selfHealingHelper = selfHealingHelper;
+    this.enableSelfHealing = !!selfHealingHelper;
+    
+    if (this.enableSelfHealing) {
+      console.log('[UI] Self-healing enabled for this instance');
+    }
   }
 
   /**
@@ -30,8 +40,18 @@ export class UiHelper {
    */
   async fill(locator: string, value: string): Promise<void> {
     console.log(`[UI] Filling ${locator} with: ${value}`);
-    const element = await this.getElement(locator);
-    await element.fill(value);
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator  // Use actual locator as description
+      );
+      await element.fill(value);
+    } else {
+      const element = await this.getElement(locator);
+      await element.fill(value);
+    }
   }
 
   /**
@@ -40,8 +60,18 @@ export class UiHelper {
    */
   async click(locator: string): Promise<void> {
     console.log(`[UI] Clicking: ${locator}`);
-    const element = await this.getElement(locator);
-    await element.click();
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator  // Use actual locator as description
+      );
+      await element.click();
+    } else {
+      const element = await this.getElement(locator);
+      await element.click();
+    }
   }
 
   /**
@@ -67,10 +97,23 @@ export class UiHelper {
    * @param locator - Element locator
    */
   async getText(locator: string): Promise<string> {
-    const element = await this.getElement(locator);
-    const text = await element.textContent();
-    console.log(`[UI] Got text from ${locator}: ${text}`);
-    return text || '';
+    console.log(`[UI] Getting text from: ${locator}`);
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const text = await element.textContent();
+      console.log(`[UI] Got text from ${locator}: ${text}`);
+      return text || '';
+    } else {
+      const element = await this.getElement(locator);
+      const text = await element.textContent();
+      console.log(`[UI] Got text from ${locator}: ${text}`);
+      return text || '';
+    }
   }
 
   /**
@@ -79,10 +122,21 @@ export class UiHelper {
    */
   async isVisible(locator: string): Promise<boolean> {
     try {
-      const element = await this.getElement(locator);
-      const visible = await element.isVisible();
-      console.log(`[UI] ${locator} is visible: ${visible}`);
-      return visible;
+      if (this.enableSelfHealing && this.selfHealingHelper) {
+        const element = await this.selfHealingHelper.findElementWithSelfHealing(
+          this.page,
+          locator,
+          locator
+        );
+        const visible = await element.isVisible();
+        console.log(`[UI] ${locator} is visible: ${visible}`);
+        return visible;
+      } else {
+        const element = await this.getElement(locator);
+        const visible = await element.isVisible();
+        console.log(`[UI] ${locator} is visible: ${visible}`);
+        return visible;
+      }
     } catch (error) {
       return false;
     }
@@ -95,8 +149,18 @@ export class UiHelper {
    */
   async waitForElement(locator: string, timeout: number = 30000): Promise<void> {
     console.log(`[UI] Waiting for element: ${locator}`);
-    const element = await this.getElement(locator);
-    await element.waitFor({ state: 'visible', timeout });
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      await element.waitFor({ state: 'visible', timeout });
+    } else {
+      const element = await this.getElement(locator);
+      await element.waitFor({ state: 'visible', timeout });
+    }
   }
 
   /**
@@ -106,8 +170,18 @@ export class UiHelper {
    */
   async verifyElementContainsText(locator: string, expectedText: string): Promise<void> {
     console.log(`[UI] Verifying ${locator} contains: ${expectedText}`);
-    const element = await this.getElement(locator);
-    await expect(element).toContainText(expectedText);
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      await expect(element).toContainText(expectedText);
+    } else {
+      const element = await this.getElement(locator);
+      await expect(element).toContainText(expectedText);
+    }
   }
 
   /**
@@ -116,8 +190,18 @@ export class UiHelper {
    */
   async verifyElementVisible(locator: string): Promise<void> {
     console.log(`[UI] Verifying ${locator} is visible`);
-    const element = await this.getElement(locator);
-    await expect(element).toBeVisible();
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator  // Use the actual locator as description instead of generic text
+      );
+      await expect(element).toBeVisible();
+    } else {
+      const element = await this.getElement(locator);
+      await expect(element).toBeVisible();
+    }
   }
 
   /**
@@ -150,8 +234,18 @@ export class UiHelper {
    */
   async getTableRows(tableLocator: string): Promise<Locator[]> {
     console.log(`[UI] Getting table rows from: ${tableLocator}`);
-    const table = await this.getElement(tableLocator);
-    return await table.locator('tr').all();
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const table = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        tableLocator,
+        tableLocator
+      );
+      return await table.locator('tr').all();
+    } else {
+      const table = await this.getElement(tableLocator);
+      return await table.locator('tr').all();
+    }
   }
 
   /**
@@ -212,10 +306,22 @@ export class UiHelper {
    */
   async getAttribute(locator: string, attributeName: string): Promise<string | null> {
     console.log(`[UI] Getting attribute '${attributeName}' from: ${locator}`);
-    const element = await this.getElement(locator);
-    const value = await element.getAttribute(attributeName);
-    console.log(`[UI] Attribute '${attributeName}' value: ${value}`);
-    return value;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const value = await element.getAttribute(attributeName);
+      console.log(`[UI] Attribute '${attributeName}' value: ${value}`);
+      return value;
+    } else {
+      const element = await this.getElement(locator);
+      const value = await element.getAttribute(attributeName);
+      console.log(`[UI] Attribute '${attributeName}' value: ${value}`);
+      return value;
+    }
   }
 
   /**
@@ -225,13 +331,28 @@ export class UiHelper {
    */
   async getCssProperty(locator: string, propertyName: string): Promise<string> {
     console.log(`[UI] Getting CSS property '${propertyName}' from: ${locator}`);
-    const element = await this.getElement(locator);
-    const value = await element.evaluate((el: any, prop: string) => {
-      const win = globalThis as any;
-      return win.getComputedStyle(el).getPropertyValue(prop);
-    }, propertyName);
-    console.log(`[UI] CSS property '${propertyName}' value: ${value}`);
-    return value;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const value = await element.evaluate((el: any, prop: string) => {
+        const win = globalThis as any;
+        return win.getComputedStyle(el).getPropertyValue(prop);
+      }, propertyName);
+      console.log(`[UI] CSS property '${propertyName}' value: ${value}`);
+      return value;
+    } else {
+      const element = await this.getElement(locator);
+      const value = await element.evaluate((el: any, prop: string) => {
+        const win = globalThis as any;
+        return win.getComputedStyle(el).getPropertyValue(prop);
+      }, propertyName);
+      console.log(`[UI] CSS property '${propertyName}' value: ${value}`);
+      return value;
+    }
   }
 
   /**
@@ -240,10 +361,22 @@ export class UiHelper {
    */
   async getInputValue(locator: string): Promise<string> {
     console.log(`[UI] Getting input value from: ${locator}`);
-    const element = await this.getElement(locator);
-    const value = await element.inputValue();
-    console.log(`[UI] Input value: ${value}`);
-    return value;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const value = await element.inputValue();
+      console.log(`[UI] Input value: ${value}`);
+      return value;
+    } else {
+      const element = await this.getElement(locator);
+      const value = await element.inputValue();
+      console.log(`[UI] Input value: ${value}`);
+      return value;
+    }
   }
 
   /**
@@ -252,10 +385,22 @@ export class UiHelper {
    */
   async isEnabled(locator: string): Promise<boolean> {
     console.log(`[UI] Checking if ${locator} is enabled`);
-    const element = await this.getElement(locator);
-    const enabled = await element.isEnabled();
-    console.log(`[UI] ${locator} is enabled: ${enabled}`);
-    return enabled;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const enabled = await element.isEnabled();
+      console.log(`[UI] ${locator} is enabled: ${enabled}`);
+      return enabled;
+    } else {
+      const element = await this.getElement(locator);
+      const enabled = await element.isEnabled();
+      console.log(`[UI] ${locator} is enabled: ${enabled}`);
+      return enabled;
+    }
   }
 
   /**
@@ -264,10 +409,22 @@ export class UiHelper {
    */
   async isChecked(locator: string): Promise<boolean> {
     console.log(`[UI] Checking if ${locator} is checked`);
-    const element = await this.getElement(locator);
-    const checked = await element.isChecked();
-    console.log(`[UI] ${locator} is checked: ${checked}`);
-    return checked;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const checked = await element.isChecked();
+      console.log(`[UI] ${locator} is checked: ${checked}`);
+      return checked;
+    } else {
+      const element = await this.getElement(locator);
+      const checked = await element.isChecked();
+      console.log(`[UI] ${locator} is checked: ${checked}`);
+      return checked;
+    }
   }
 
   /**
@@ -276,10 +433,22 @@ export class UiHelper {
    */
   async getElementBoundingBox(locator: string): Promise<{ x: number; y: number; width: number; height: number } | null> {
     console.log(`[UI] Getting bounding box for: ${locator}`);
-    const element = await this.getElement(locator);
-    const box = await element.boundingBox();
-    console.log(`[UI] Bounding box:`, box);
-    return box;
+    
+    if (this.enableSelfHealing && this.selfHealingHelper) {
+      const element = await this.selfHealingHelper.findElementWithSelfHealing(
+        this.page,
+        locator,
+        locator
+      );
+      const box = await element.boundingBox();
+      console.log(`[UI] Bounding box:`, box);
+      return box;
+    } else {
+      const element = await this.getElement(locator);
+      const box = await element.boundingBox();
+      console.log(`[UI] Bounding box:`, box);
+      return box;
+    }
   }
 
   /**
@@ -288,7 +457,10 @@ export class UiHelper {
    */
   async getAllProperties(locator: string): Promise<any> {
     console.log(`[UI] Getting all properties from: ${locator}`);
-    const element = await this.getElement(locator);
+    
+    const element = this.enableSelfHealing && this.selfHealingHelper
+      ? await this.selfHealingHelper.findElementWithSelfHealing(this.page, locator, locator)
+      : await this.getElement(locator);
     
     const properties = await element.evaluate((el: any) => {
       const win = globalThis as any;

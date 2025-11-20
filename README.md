@@ -446,53 +446,89 @@ This project provides a comprehensive solution for running Playwright tests with
 
 #### Using NPM Scripts
 
-**Run All Tests:**
+**Run All Tests in a Module:**
 ```bash
-npm run test                    # Run all tests
-npm run test:headed            # Run all tests in headed mode (visible browser)
-npm run test:ui                # Run tests in UI mode (interactive)
-npm run test:debug             # Run tests in debug mode
+npm run test:account-management         # All account tests (headed)
+npm run test:transaction-management     # All transaction tests (headed)
+npm run test:customer-management        # All customer tests (headed)
+npm run test:loan-management            # All loan tests (headed)
+npm run test:payment-management         # All payment tests (headed)
+npm run test:security-and-auth          # All auth tests (headed)
+npm run test:all-modules                # All tests (headed)
 ```
 
-**Run Specific Test Files:**
+**Run Tests with Specific Patterns:**
 ```bash
-# Run specific test file
-npm run test:file tests/create-contact-api-to-ui-generated.spec.ts
+npm run test:selfhealing               # All self-healing tests (headed)
+npm test -- --headed --grep "login"    # Tests matching "login" pattern
+npm test -- --headed --grep "api"      # Tests matching "api" pattern
+```
 
-# Run specific test file in headed mode
-npm run test:file:headed tests/create-contact-api-to-ui-generated.spec.ts
+**Run All Tests:**
+```bash
+npm run test                           # Run all tests (headless)
+npm run test:headed                    # Run all tests (headed mode)
+npm run test:ui                        # Run in UI mode (interactive)
+npm run test:debug                     # Run in debug mode
+```
 
-# Run specific test file with HTML report
-npm run test:file:reporter tests/create-contact-api-to-ui-generated.spec.ts
+**Run Individual Tests (Workspace-Specific Limitations):**
 
-# Run multiple test files matching pattern
-npm run test:file "tests/api*.spec.ts"
+⚠️ **IMPORTANT:** Due to the workspace folder name containing spaces and special characters, 
+direct file path patterns do NOT work reliably.
 
-# Run test with additional options
-npm run test:file "tests/login*.spec.ts --project=chromium"
+**❌ THESE WILL FAIL:**
+```bash
+npm test tests/account-management/my-test.spec.ts
+npm test -- tests/account-management/my-test.spec.ts --headed
+npx playwright test tests/account-management/my-test.spec.ts
+```
+
+**✅ RECOMMENDED APPROACHES FOR RUNNING INDIVIDUAL TESTS:**
+
+**Option 1: VS Code Test Explorer (Easiest)**
+- Open Testing panel (beaker icon in sidebar)
+- Find your test in the tree
+- Click the play button ▶️ next to it
+
+**Option 2: Use `.only` Modifier**
+Add `.only` to your test in the file:
+```typescript
+test.only('My specific test', async ({ ... }) => {
+  // Only this test will run
+});
+```
+Then run the module:
+```bash
+npm run test:account-management
+```
+
+**Option 3: Use Grep with Unique Name**
+```bash
+npm test -- --headed --grep "unique-test-name-here"
+```
+
+**Option 4: Run with Workers=1**
+Run all tests in a folder with one worker:
+```bash
+node node_modules/@playwright/test/cli.js test tests/account-management --headed --workers=1
 ```
 
 **View Reports:**
 ```bash
-npm run report                 # Show the HTML report
+npm run report                         # Show the HTML report
 ```
 
 #### Using Batch Files (Windows)
 ```bash
-# Run all tests
-./playwright-test.bat
+# Run all tests in a module
+./playwright-test.bat tests/account-management --headed
 
-# Run specific test file
-./playwright-test.bat tests/create-contact-api-to-ui-generated.spec.ts
+# Run with one worker
+./playwright-test.bat tests/account-management --headed --workers=1
 
-# Run tests in headed mode
-./playwright-test.bat --headed
-
-# Run specific test with HTML reporter
-./playwright-test.bat tests/login*.spec.ts --reporter=html
-
-# Run tests matching a pattern
-./playwright-test.bat tests/api* --headed
+# Run self-healing tests
+./playwright-test.bat --grep selfhealing --headed
 
 # Show HTML report
 ./playwright-report.bat

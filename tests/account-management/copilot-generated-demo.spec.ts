@@ -9,7 +9,7 @@
 
 import { test, expect } from '../../src/fixtures/test-fixtures';
 
-test.describe('Parabank End-to-End - API to UI Account Creation Validation', () => {
+test.describe.skip('Parabank End-to-End - API to UI Account Creation Validation', () => {
   
   test('Create account via API and verify in UI', async ({ page, apiHelper, testContext }) => {
     

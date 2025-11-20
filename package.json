@@ -21,7 +21,9 @@
     "test:loan-management:ci": "node node_modules/@playwright/test/cli.js test tests/loan-management",
     "test:payment-management:ci": "node node_modules/@playwright/test/cli.js test tests/payment-management",
     "test:security-and-auth:ci": "node node_modules/@playwright/test/cli.js test tests/security-and-auth",
-    "test:all-modules:ci": "node node_modules/@playwright/test/cli.js test tests"
+    "test:all-modules:ci": "node node_modules/@playwright/test/cli.js test tests",
+    "test:selfhealing": "node node_modules/@playwright/test/cli.js test --grep selfhealing --headed",
+    "test:selfhealing:ci": "node node_modules/@playwright/test/cli.js test --grep selfhealing"
   },
   "keywords": [],
   "author": "",
